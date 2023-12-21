@@ -1,86 +1,140 @@
 #include <stdio.h>
 
-#include "pico/stdlib.h"
-
 #include "hardware/i2c.h"
-#include "hardware/adc.h"
 #include "hardware/clocks.h"
+#include "hardware/gpio.h"
 
+#include "adc.h"
+#include "button.h"
 #include "ssd1306.h"
 #include "ntc10k.h"
 
-float read_onboard_temp() {
-    // Select the onboard temperature sensor
-    adc_set_temp_sensor_enabled(true);
-    adc_select_input(4); // ADC input 4 is typically reserved for the temperature sensor
+typedef enum {
+    INFO,
+    TEMPERATURES
+} screen_t;
 
-    const float conversion_factor = 3.3f / (1 << 12); // 12-bit ADC, 3.3V reference voltage
-    uint16_t result = adc_read();
+typedef struct {
+    screen_t screen;
+    bool force_clean;
+    absolute_time_t start_time;
+    int counter;
+} state_t;
 
-    // Convert the result to voltage
-    float voltage = result * conversion_factor;
+volatile state_t state;
 
-    // Convert voltage to temperature
-    // According to the RP2040 datasheet, the temperature sensor has an output of 0.706V at 0°C
-    // with a slope of 1.721mV/°C
-    return (27 - ((voltage - 0.706) / 0.001721));
+state_t get_initial_state() {
+    state_t state = {
+        .screen = INFO,
+        .force_clean = false,
+        .start_time = get_absolute_time(),
+        .counter = 0
+    };
+
+    return state;
 }
 
-float read_voltage() {
-    // Select the onboard temperature sensor
-    adc_set_temp_sensor_enabled(true);
-    adc_select_input(4); // ADC input 4 is typically reserved for the temperature sensor
+void render_info() {
+    char str[100];
 
-    const float conversion_factor = 3.3f / (1 << 12); // 12-bit ADC, 3.3V reference voltage
-    uint16_t result = adc_read();
+    write_string("        INFO", 0, 0);
 
-    // Convert the result to voltage
-    return result * conversion_factor;
+    int64_t uptime = absolute_time_diff_us(state.start_time, get_absolute_time()) / 1000000;
+    sprintf(str, "UPTIME: %d SEC", uptime);
+    write_string(str, 2, 0);
+
+    write_string("CHIP: RP2040", 3, 0);
+
+    sprintf(str, "CPU FREQ: %dMHZ", clock_get_hz(clk_sys) / 1000000);
+    write_string(str, 4, 0);
+
+    sprintf(str, "CORE TEMP: %.1f", read_onboard_temp());
+    write_string(str, 5, 0);
+
+    sprintf(str, "VOLTAGE: %.3f", read_voltage());
+    write_string(str, 6, 0);
+
+    sprintf(str, "I2C IRQ: %d", irq_is_enabled(5));
+    write_string(str, 7, 0);
 }
 
-int main() {
+void render_temperature() {
+    char str[100];
+
+    write_string("     TEMPERATURES", 0, 0);
+
+    sprintf(str, "ROOM:   %.1f", ntc10k_read_temperature(2));
+    write_string(str, 2, 0);
+
+    sprintf(str, "CASE:   %.1f", ntc10k_read_temperature(1));
+    write_string(str, 3, 0);
+
+    sprintf(str, "WATER: %.1f", ntc10k_read_temperature(0));
+    write_string(str, 4, 0);
+}
+
+
+void gpio_callback(uint gpio, uint32_t events) {
+    switch (gpio) {
+    case 20:
+        // ssd1306_start_horizontal_scroll(true, 3, 5, 0x03);
+        break;
+    case 21:
+        gpio_put(25, !gpio_get(25));
+        break;
+    case 22:
+        state.screen = state.screen == INFO ? TEMPERATURES : INFO;
+        state.force_clean = true;
+        break;
+    }
+
+    printf("GPIO %d event %d\n", gpio, events);
+}
+
+void main() {
+    state = get_initial_state();
+
     stdio_init_all();
 
-    // initialize ntc10k
-    ntc10k_init();
-
-    // Initialize I2C
+    // Initialize I2C bus 0
     i2c_init(i2c0, 100 * 1000);
     gpio_set_function(0, GPIO_FUNC_I2C);
     gpio_set_function(1, GPIO_FUNC_I2C);
 
-    // Initialize SSD1306 display
+    // Initialize onboard LED
+    gpio_init(25);
+    gpio_set_dir(25, GPIO_OUT);
+
+    // Initialize buttons with interrupts
+    int button_pins[] = {20, 21, 22};
+    button_init(button_pins, 3, &gpio_callback);
+
+    // Initialize SSD1306 display with default configuration
     ssd1306_config_t ssd1306_config = ssd1306_get_default_config();
     ssd1306_init(&ssd1306_config);
 
-    int counter = 0;
-    char str[100];
+    loop();
+}
+
+int loop(){
     while(1) {
-        write_string("BOARD: PI PICO RP2040", 0, 0);
+        absolute_time_t start = get_absolute_time();
 
-        sprintf(str, "CPU FREQ: %dMHZ", clock_get_hz(clk_sys) / 1000000);
-        write_string(str, 1, 0);
+        if (state.force_clean) {
+            clear_display();
+            state.force_clean = false;
+        }
+        
+        if (state.screen == INFO) {
+            render_info();
+        } else {
+            render_temperature();
+        }
 
-        sprintf(str, "TEMP 1: %.1f", ntc10k_read_temperature(2));
-        write_string(str, 2, 0);
+        // printf("Display frequency: %lldHz\n", 1000 / (absolute_time_diff_us(start, get_absolute_time()) / 1000));
+        printf("Render time: %lldms\n", absolute_time_diff_us(start, get_absolute_time()) / 1000);
 
-        sprintf(str, "TEMP 2: %.1f", ntc10k_read_temperature(1));
-        write_string(str, 3, 0);
-
-        sprintf(str, "TEMP 3: %.1f", ntc10k_read_temperature(0));
-        write_string(str, 4, 0);
-
-        sprintf(str, "CORE TEMP: %.1f", read_onboard_temp());
-        write_string(str, 5, 0);
-
-        sprintf(str, "VOLTAGE: %.3f", read_voltage());
-        write_string(str, 6, 0);
-
-        sprintf(str, "UPTIME: %d SEC", counter);
-        write_string(str, 7, 0);
-
-        sleep_ms(1000);
-        counter++;
+        sleep_ms(100);
     }
 
     return 0;
