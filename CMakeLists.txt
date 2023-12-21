@@ -25,6 +25,8 @@ pico_sdk_init()
 # Add the project source files
 add_executable(${PROJECT_NAME}
     src/main.c
+    src/ssd1306.c
+    src/ntc10k.c
 )
 
 # Include directories
@@ -33,6 +35,9 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 # Link the Pico SDK libraries
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
+    hardware_i2c
+    hardware_adc
+    hardware_clocks
 )
 
 # Enable UART output (optional)
