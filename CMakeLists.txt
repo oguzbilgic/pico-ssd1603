@@ -25,6 +25,8 @@ pico_sdk_init()
 # Add the project source files
 add_executable(${PROJECT_NAME}
     src/main.c
+    src/adc.c
+    src/button.c
     src/ssd1306.c
     src/ntc10k.c
 )

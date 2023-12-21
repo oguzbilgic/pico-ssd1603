@@ -1,6 +1,8 @@
 #include "hardware/adc.h"
 
 float read_onboard_temp() {
+    adc_init();
+
     // Select the onboard temperature sensor
     adc_set_temp_sensor_enabled(true);
     adc_select_input(4); // ADC input 4 is typically reserved for the temperature sensor
@@ -18,6 +20,8 @@ float read_onboard_temp() {
 }
 
 float read_voltage() {
+    adc_init();
+
     // Select the onboard temperature sensor
     adc_set_temp_sensor_enabled(true);
     adc_select_input(4); // ADC input 4 is typically reserved for the temperature sensor
