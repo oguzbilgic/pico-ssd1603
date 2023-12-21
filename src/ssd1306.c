@@ -51,22 +51,22 @@ const uint8_t font[][5] = {
 };
 
 const uint8_t init_commands[] = {
-    0xAE,             // Display off
-    0xD5, 0x80,       // Set display clock divide ratio/oscillator frequency
-    0xA8, 0x3F,       // Set multiplex ratio (1 to 64) - adjust if your display is 32 or 64 pixels high
-    0xD3, 0x00,       // Set display offset
-    0x40,             // Set start line address
-    0x8D, 0x14,       // Enable charge pump regulator
-    0x20, 0x00,       // Set Memory Addressing Mode to Horizontal Addressing Mode
+    // 0xAE,             // Display off
+    // 0xD5, 0x80,       // Set display clock divide ratio/oscillator frequency
+    // 0xA8, 0x3F,       // Set multiplex ratio (1 to 64) - adjust if your display is 32 or 64 pixels high
+    // 0xD3, 0x00,       // Set display offset
+    // 0x40,             // Set start line address
+    // 0x8D, 0x14,       // Enable charge pump regulator
+    // 0x20, 0x00,       // Set Memory Addressing Mode to Horizontal Addressing Mode
     0xA1,             // Set segment re-map
     0xC8,             // Set COM Output Scan Direction
-    0xDA, 0x12,       // Set COM Pins hardware configuration - adjust if needed
-    0x81, 0xCF,       // Set contrast control
-    0xD9, 0xF1,       // Set pre-charge period
-    0xDB, 0x40,       // Set VCOMH deselect level
-    0xA4,             // Disable entire display on
-    0xA6,             // Disable inverse display on
-    0x2E,             // Deactivate scroll
+    // 0xDA, 0x12,       // Set COM Pins hardware configuration - adjust if needed
+    // 0x81, 0xCF,       // Set contrast control
+    // 0xD9, 0xF1,       // Set pre-charge period
+    // 0xDB, 0x40,       // Set VCOMH deselect level
+    // 0xA4,             // Disable entire display on
+    // 0xA6,             // Disable inverse display on
+    // 0x2E,             // Deactivate scroll
     0xAF              // Turn on SSD1306 panel
     // You can add more commands as needed for your specific application
 };
@@ -91,10 +91,10 @@ ssd1306_config_t ssd1306_get_default_config() {
 void ssd1306_init(const ssd1306_config_t *config) {
     ssd1306_config = *config;
 
+    clear_display();
+
     // Send initialization sequence to SSD1306
     send_command(init_commands, sizeof(init_commands));
-
-    clear_display();
 }
 
 void ssd1306_deinit(void) {
