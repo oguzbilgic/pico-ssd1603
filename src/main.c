@@ -1,8 +1,6 @@
 #include <stdio.h>
-#include <math.h>
 
 #include "pico/stdlib.h"
-#include "pico/binary_info.h"
 
 #include "hardware/i2c.h"
 #include "hardware/adc.h"
@@ -10,17 +8,6 @@
 
 #include "ssd1306.h"
 #include "ntc10k.h"
-
-void i2c_init_default() {
-    // Initialize I2C with the default configuration
-    i2c_init(i2c_default, 100 * 1000);
-
-    gpio_set_function(0, GPIO_FUNC_I2C);
-    gpio_set_function(1, GPIO_FUNC_I2C);
-
-    gpio_pull_up(0);
-    gpio_pull_up(1);
-}
 
 float read_onboard_temp() {
     // Select the onboard temperature sensor
@@ -58,10 +45,13 @@ int main() {
     ntc10k_init();
 
     // Initialize I2C
-    i2c_init_default();
+    i2c_init(i2c0, 100 * 1000);
+    gpio_set_function(0, GPIO_FUNC_I2C);
+    gpio_set_function(1, GPIO_FUNC_I2C);
 
     // Initialize SSD1306 display
-    ssd1306_init(NULL);
+    ssd1306_config_t ssd1306_config = ssd1306_get_default_config();
+    ssd1306_init(&ssd1306_config);
 
     int counter = 0;
     char str[100];
@@ -88,9 +78,6 @@ int main() {
 
         sprintf(str, "UPTIME: %d SEC", counter);
         write_string(str, 7, 0);
-
-        // sprintf(str, "USB FREQ: %dMHZ", clock_get_hz(clk_usb) / 1000000);
-        // write_string(str, 7, 0);
 
         sleep_ms(1000);
         counter++;

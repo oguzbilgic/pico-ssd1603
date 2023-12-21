@@ -84,11 +84,11 @@ static const ssd1306_config_t DEFAULT_SSD1306_CONFIG = {
     .height = 64
 };
 
-void ssd1306_init(const ssd1306_config_t *config) {
-    if (config == NULL) {
-        config = &DEFAULT_SSD1306_CONFIG;
-    }
+ssd1306_config_t ssd1306_get_default_config() {
+    return DEFAULT_SSD1306_CONFIG;
+}
 
+void ssd1306_init(const ssd1306_config_t *config) {
     ssd1306_config = *config;
 
     // Send initialization sequence to SSD1306
@@ -112,7 +112,7 @@ void send_command(const uint8_t *commands, size_t length) {
         buffer[i + 1] = commands[i];
     }
 
-    i2c_write_blocking(ssd1306_config.i2c_port, ssd1306_config.i2c_address, buffer, length + 1, false);
+    return i2c_write_blocking(ssd1306_config.i2c_port, ssd1306_config.i2c_address, buffer, length + 1, false);
 }
 
 void send_data(const uint8_t *data, size_t length) {

@@ -21,6 +21,7 @@ typedef struct {
 // Function declarations
 void ssd1306_init(const ssd1306_config_t *config);
 void ssd1306_deinit(void);
+ssd1306_config_t ssd1306_get_default_config(void);
 void send_command(const uint8_t *commands, size_t length);
 void send_data(const uint8_t *data, size_t length);
 void set_page_column(uint8_t page, uint8_t column);
