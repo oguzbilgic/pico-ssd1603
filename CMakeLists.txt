@@ -7,7 +7,7 @@ set(PICO_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/lib/pico-sdk)
 set(PICO_BOARD pico_w)
 
 # Set the project name
-set(PROJECT_NAME project_name)
+set(PROJECT_NAME pico-ssd1603)
 
 # Include the Pico SDK. Must be before project()
 include(${PICO_SDK_PATH}/pico_sdk_init.cmake)

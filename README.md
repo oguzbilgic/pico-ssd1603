@@ -1,46 +1,52 @@
-# Pi Pico Minimal Build
+# SSD1306 Driver for Raspberry Pi Pico
 
-This is a minimal build template for a Raspberry Pi Pico project using the Pico SDK and CMake.
+This SSD1306 library is designed for interfacing with an SSD1306 OLED display using the Raspberry Pi Pico. It simplifies the process of initializing the display, rendering text, and managing display properties. The library is written in C and is tailored for use with the Raspberry Pi Pico SDK, making it suitable for a wide range of embedded projects that require display capabilities.
 
-## Prerequisites
+## Features
 
-- CMake 3.13 or higher
-- Pico SDK
+* Display Initialization: Configure and initialize the SSD1306 display with custom settings.
+* Text Rendering: Display text using a built-in 5x7 font.
+* Display Control: Clear the screen, adjust contrast, and set display orientation.
+* Separation of low-level hardware interaction (HAL) and high-level display functions.
+* Supports different I2C addresses and screen sizes.
+* Utilizes I2C protocol for communication, optimizing for speed and resource usage.
 
-## Setup
+## Installation
 
-1. Update the `PICO_SDK_PATH` in the `CMakeLists.txt` file with your own Pico SDK path.
-2. Set the `PICO_BOARD` in the `CMakeLists.txt` file to your specific Pico board model.
-3. Set the `PROJECT_NAME` in the `CMakeLists.txt` file with your project name.
+### Add as a Git Submodule:
 
-## Build
-
-To build the project, navigate to the project directory and run the following commands:
-
-```bash
-mkdir build
-cd build
-cmake ..
-make
+```sh
+cd external/
+git submodule add https://github.com/oguzbilgic/pico-ssd1603
+git submodule update --init --recursive
 ```
 
-This will generate the necessary executable and other output files for your project.
+### Integrate with CMake:
 
-## Flashing the Build to Pi Pico
+Add the SSD1306 library to your CMakeLists.txt:
 
-After building the project, you can flash the generated binary to your Pi Pico using picotool. Here are the steps:
-
-1. Install picotool by following the instructions on the [picotool GitHub page](https://github.com/raspberrypi/picotool).
-2. Connect your Pi Pico to your computer. Hold the BOOTSEL button while connecting to enable the UF2 bootloader mode.
-3. Use the following command to upload the binary to your Pi Pico:
-
-```bash
-cd build
-picotool load <your_project_name>.uf2
+```cmake
+add_subdirectory(external/ssd1306)
+target_link_libraries(your_executable PRIVATE ssd1306)
 ```
 
 ## Usage
 
-The main entry point of the project is `src/main.c`. Add your source files to the `add_executable` function in the `CMakeLists.txt` file and link any additional Pico SDK libraries to the `target_link_libraries` function.
+To use the library, include the header file and initialize the display with your desired configuration:
 
-You can enable UART output or USB output by uncommenting the respective lines in the `CMakeLists.txt` file.
+```c
+#include "ssd1306.h"
+
+int main() {
+    ssd1306_config_t config = {
+        .i2c_port = i2c0,
+        .i2c_address = 0x3C,
+        .width = 128,
+        .height = 64
+    };
+
+    ssd1306_init(&config);
+    ssd1306_write_string("Hello, World!", 0, 0);
+    // Additional display operations...
+}
+```
