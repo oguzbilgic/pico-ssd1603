@@ -136,13 +136,12 @@ void set_page_column(uint8_t page, uint8_t column) {
 }
 
 void clear_display(void) {
-    for (uint8_t page = 0; page < 8; page++) {
-        set_page_column(page, 0);
+    uint8_t clear_data[ssd1306_config.width]; // Buffer to hold the clear data for one entire page
+    memset(clear_data, 0x00, ssd1306_config.width); // Set all bytes in the buffer to 0
 
-        for (uint8_t column = 0; column < 128; column++) {
-            uint8_t clear_data[] = {0x00};
-            send_data(clear_data, 1);
-        }
+    for (uint8_t page = 0; page < 8; page++) {
+        set_page_column(page, 0); // Set the current page and start from the first column
+        send_data(clear_data, ssd1306_config.width); // Send the clear data to clear the entire page
     }
 }
 
