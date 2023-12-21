@@ -15,31 +15,14 @@
 
 #include <math.h>
 
-// #include "pico/stdlib.h"
-
 #include "hardware/adc.h"
 
-#define ADC_PINS (int[]){26, 27, 28} // Change this to the GPIO number connected to the thermistor
-#define ADC_PINS_COUNT 3
 #define BETA 3950  // Beta value - change this to your thermistor's Beta value
 #define R0 10000   // Resistance of the thermistor at 25 degrees C (10kΩ)
 #define R1 10000.0f   // Pull up resistor value (10kΩ)
 #define T0 298.15  // Reference temperature in Kelvin (25°C)
 
-/**
- * @brief Initializes the temperature sensor.
- * 
- * This function initializes the temperature sensor by initializing the ADC and selecting the input channels.
- * It also sets the ADC voltage reference to 3.3V.
- */
-void ntc10k_init() {
-    adc_init();
-
-    // loop over adc_PINS and select each one
-    for (int i = 0; i < ADC_PINS_COUNT; i++) {
-        adc_select_input(ADC_PINS[i]);
-    }
-}
+bool is_initialized = false;
 
 /**
  * @brief Read the temperature from the specified ADC channel.
@@ -48,7 +31,10 @@ void ntc10k_init() {
  * @return The temperature in Celsius.
  */
 float ntc10k_read_temperature(int adc_channel) {
-    adc_set_temp_sensor_enabled(true);
+    if (!is_initialized) {
+        adc_init();
+        is_initialized = true;
+    }
 
     // ADC channels start from GPIO 26
     adc_select_input(adc_channel); 
