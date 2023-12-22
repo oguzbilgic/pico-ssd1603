@@ -113,10 +113,6 @@ void main() {
     ssd1306_config_t ssd1306_config = ssd1306_get_default_config();
     ssd1306_init(&ssd1306_config);
 
-    loop();
-}
-
-int loop(){
     while(1) {
         absolute_time_t start = get_absolute_time();
 

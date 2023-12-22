@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
     src/button.c
     src/ssd1306.c
     src/ntc10k.c
+    src/moving_average.c
 )
 
 # Include directories
@@ -37,6 +38,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 # Link the Pico SDK libraries
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
+    pico_time
     hardware_i2c
     hardware_adc
     hardware_clocks
