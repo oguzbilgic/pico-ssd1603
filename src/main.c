@@ -107,7 +107,7 @@ void main() {
 
     // Initialize buttons with interrupts
     int button_pins[] = {20, 21, 22};
-    button_init(button_pins, 3, &gpio_callback);
+    button_init(button_pins, 3, gpio_callback);
 
     // Initialize SSD1306 display with default configuration
     ssd1306_config_t ssd1306_config = ssd1306_get_default_config();
