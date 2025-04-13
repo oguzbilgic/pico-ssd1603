@@ -49,9 +49,6 @@ void render_info() {
     sprintf(str, "CORE TEMP: %.1f", read_onboard_temp());
     write_string(str, 4, 0);
 
-    sprintf(str, "VOLTAGE: %.3f", read_voltage());
-    write_string(str, 5, 0);
-
     sleep_ms(250);
 }
 
@@ -75,7 +72,7 @@ void render_adc() {
 
     write_string("       VOLTAGES", 0, 0);
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 4; i++) {
         sprintf(str, "ADC%d:   %.3fV", i, adc_read_voltage(i));
         write_string(str, i + 2, 0);
     }

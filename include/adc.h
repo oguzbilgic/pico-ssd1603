@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+float adc_read_voltage(int adc_channel);
+
 // Function to read the onboard temperature
 float read_onboard_temp();
 
