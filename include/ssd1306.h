@@ -26,6 +26,7 @@ void send_command(const uint8_t *commands, size_t length);
 void send_data(const uint8_t *data, size_t length);
 void set_page_column(uint8_t page, uint8_t column);
 void clear_display(void);
+void ssd1306_start_horizontal_scroll(bool scrollRight, uint8_t startPage, uint8_t endPage, uint8_t frameInterval);
 void write_char(char c, uint8_t page, uint8_t column);
 void write_string(const char *str, uint8_t page, uint8_t column);
 

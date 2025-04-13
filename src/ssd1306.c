@@ -1,5 +1,6 @@
 // ssd1306.c
 #include "ssd1306.h"
+#include "string.h"
 
 // Basic 5x7 font
 const uint8_t font[][5] = {
@@ -114,7 +115,7 @@ void send_command(const uint8_t *commands, size_t length) {
         buffer[i + 1] = commands[i];
     }
 
-    return i2c_write_blocking(ssd1306_config.i2c_port, ssd1306_config.i2c_address, buffer, length + 1, false);
+    i2c_write_blocking(ssd1306_config.i2c_port, ssd1306_config.i2c_address, buffer, length + 1, false);
 }
 
 void send_data(const uint8_t *data, size_t length) {
@@ -134,6 +135,21 @@ void set_page_column(uint8_t page, uint8_t column) {
         0x00 | (column & 0x0F) + 2,       // Set lower column address
         0x10 | ((column >> 4) & 0x0F) // Set higher column address
     };
+    send_command(commands, sizeof(commands));
+}
+
+void ssd1306_start_horizontal_scroll(bool scrollRight, uint8_t startPage, uint8_t endPage, uint8_t frameInterval) {
+    uint8_t commands[] = {
+        scrollRight ? 0x26 : 0x27, // Right or left horizontal scroll
+        0x00, // Dummy byte
+        startPage, // Start page address
+        frameInterval, // Frame interval
+        endPage, // End page address
+        0x00, // Dummy byte
+        0xFF, // Dummy byte
+        0x2F // Activate scroll
+    };
+
     send_command(commands, sizeof(commands));
 }
 

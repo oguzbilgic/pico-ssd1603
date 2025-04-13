@@ -16,7 +16,7 @@
 
 #include "moving_average.h"
 
-#define BETA 3950  // Beta value - change this to your thermistor's Beta value
+#define BETA 3380  // Beta value - change this to your thermistor's Beta value
 #define R0 10000   // Resistance of the thermistor at 25 degrees C (10kΩ)
 #define R1 10000.0f   // Pull up resistor value (10kΩ)
 #define T0 298.15  // Reference temperature in Kelvin (25°C)
@@ -43,6 +43,11 @@ void ntc10k_init() {
         init_moving_average(&moving_averages[adc_channel]);
     }
 
+    // Set GPIO 23 to high
+    gpio_init(23);
+    gpio_set_dir(23, GPIO_OUT);
+    gpio_put(23, 1);
+
     add_repeating_timer_ms(250, timer_callback, NULL, &timer);
 
     // Call the timer callback function once to read the sensors
@@ -59,10 +64,16 @@ void ntc10k_init() {
  */
 float ntc10k_read_sensor(int adc_channel) {
     // ADC channels start from GPIO 26
-    adc_select_input(adc_channel); 
+    adc_set_temp_sensor_enabled(false);
+    adc_select_input(adc_channel);
 
     uint16_t adc_value = adc_read();
+    // print adc channel and value
     float R = (R1 * adc_value) / (4095 - adc_value);
+
+    // volt
+    const float conversion_factor = 3.305f / (1 << 12);
+    // printf("ADC%d: %0.3f V\n",adc_channel, adc_value * conversion_factor);
 
     // Calculate temperature in Kelvin
     float temperature_k = BETA / (log(R / R0) + (BETA / T0));

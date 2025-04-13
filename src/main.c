@@ -1,10 +1,12 @@
 #include <stdio.h>
 
+#include "hardware/adc.h"
 #include "hardware/i2c.h"
 #include "hardware/clocks.h"
 #include "hardware/gpio.h"
 
 #include "adc.h"
+#include "repl.h"
 #include "button.h"
 #include "ssd1306.h"
 #include "ntc10k.h"
@@ -76,8 +78,6 @@ void render_adc() {
         sprintf(str, "ADC%d:   %.3fV", i, adc_read_voltage(i));
         write_string(str, i + 2, 0);
     }
-
-    sleep_ms(100);
 }
 
 
@@ -99,11 +99,14 @@ void gpio_callback(uint gpio, uint32_t events) {
         break;
     }
 
-    printf("GPIO %d event %d\n", gpio, events);
+    // print screen 
+    // printf("Screen: %d\n", state.screen);
+
+    // printf("GPIO %d event %d\n", gpio, events);
 }
 
 void render_display() {
-    absolute_time_t start = get_absolute_time();
+    // absolute_time_t start = get_absolute_time();
 
     if (state.force_clean) {
         clear_display();
@@ -124,6 +127,10 @@ void render_display() {
 
     // printf("Display frequency: %lldHz\n", 1000 / (absolute_time_diff_us(start, get_absolute_time()) / 1000));
     // printf("Render time: %lldms\n", absolute_time_diff_us(start, get_absolute_time()) / 1000);
+}
+
+void command_help() {
+    printf("Available commands:\n");
 }
 
 int main() {
@@ -147,6 +154,9 @@ int main() {
     // Initialize SSD1306 display with default configuration
     ssd1306_config_t ssd1306_config = ssd1306_get_default_config();
     ssd1306_init(&ssd1306_config);
+
+    // repl_init();
+    // repl_register_command("help", command_help);
 
     while(1) {
         render_display();

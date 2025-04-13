@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
     src/button.c
     src/ssd1306.c
     src/ntc10k.c
+    src/repl.c
     src/moving_average.c
 )
 
